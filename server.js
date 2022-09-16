@@ -1,41 +1,70 @@
+/*********************************************************************************
+*  WEB422 – Assignment 1
+*  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  
+*  No part of this assignment has been copied manually or electronically from any other source
+*  (including web sites) or distributed to other students.
+* 
+*  Name: __Chao Meng_____ Student ID: _128438215_ Date: __2022-09-15____
+*  Cyclic Link: _______________________________________________________________
+*
+********************************************************************************/ 
+
+
 const express=require("express");
 //const path = require('path');
 const bodyParser = require('body-parser');
 const app = express();
 const cors=require("cors");
 //require dotenv package to enable read code from .env file
-//require('dotenv').config();
 require('dotenv').config();
+
 app.use(bodyParser.json());
 //declared to use cors
 app.use(cors());
 //parse the json in the request body
 app.use(express.json());
-const HTTP_PORT = process.env.PORT || 8080;
 
 const MoviesDB = require("./modules/moviesDB.js");
 const db = new MoviesDB();
-
+const HTTP_PORT = process.env.PORT || 8080;
 //const myUdatedConnectionString = MoviesDB("mongodb+srv://cmeng14:dE355PKsXXSAkwv@cluster0.wjwfi.mongodb.net/sample_mflix?retryWrites=true&w=majority");
 
 //MONGODB_CONN_STRING=myUdatedConnectionString;
+db.initialize(process.env.MONGODB_CONN_STRING).then(()=>{
+    app.listen(HTTP_PORT, ()=>{
+        console.log(`server listening on: ${HTTP_PORT}`);
+    });
+}).catch((err)=>{
+    console.log(err);
+});
 
 //Add routs
+//GET/api/movies
+app.get("/api/movies",(req,res)=>{
+    // if(!req.query.page||!req.query.perPage){
+    //     res.status(500).json({message:"missing"});
+    // }else{
+
+    db.getAllMovies(req.query.page,req.query.perPage,req.query.title).then((msg)=>{
+        console.log(msg);
+        if(msg.length===0){
+            res.status(204).json({message:"no data"});
+        }else{
+            res.status(200).json(msg);
+        }
+        
+    }).catch(err=>{
+        res.status(400).json({message:"err"});
+    });
+    //}
+});
+
 //POST /api/movies
 app.post("/api/movies",(req,res)=>{
     //call addNewMovie()
     db.addNewMovie(req.body).then((addMovie)=>{
         console.log(addMovie);
         res.status(201).json(addMovie);
-    }).catch(err=>{
-        res.status(400).json({message:err});
-    });
-});
-//GET/api/movies
-app.get("/api/movies",(req,res)=>{
-    db.getAllMovies(req.query.page,req.query.perPage).then((msg)=>{
-        console.log(msg);
-        res.status(200).json(msg);
     }).catch(err=>{
         res.status(400).json({message:err});
     });
@@ -77,10 +106,3 @@ app.get('/',(req,res)=>{
     res.json({message:"API Listening"});
 });
 
-db.initialize(process.env.MONGODB_CONN_STRING).then(()=>{
-    app.listen(HTTP_PORT, ()=>{
-        console.log(`server listening on: ${HTTP_PORT}`);
-    });
-}).catch((err)=>{
-    console.log(err);
-});
