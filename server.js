@@ -17,7 +17,7 @@ const app = express();
 const cors=require("cors");
 //require dotenv package to enable read code from .env file
 require('dotenv').config();
-
+const {MONGODB_CONN_STRING} = process.env;
 app.use(bodyParser.json());
 //declared to use cors
 app.use(cors());
@@ -41,22 +41,16 @@ db.initialize(process.env.MONGODB_CONN_STRING).then(()=>{
 //Add routs
 //GET/api/movies
 app.get("/api/movies",(req,res)=>{
-    // if(!req.query.page||!req.query.perPage){
-    //     res.status(500).json({message:"missing"});
-    // }else{
-
     db.getAllMovies(req.query.page,req.query.perPage,req.query.title).then((msg)=>{
         console.log(msg);
         if(msg.length===0){
             res.status(204).json({message:"no data"});
         }else{
             res.status(200).json(msg);
-        }
-        
+        }  
     }).catch(err=>{
         res.status(400).json({message:"err"});
     });
-    //}
 });
 
 //POST /api/movies
