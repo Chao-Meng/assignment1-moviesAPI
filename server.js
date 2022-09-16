@@ -17,7 +17,7 @@ const app = express();
 const cors=require("cors");
 //require dotenv package to enable read code from .env file
 require('dotenv').config();
-//const {MONGODB_CONN_STRING} = process.env;
+
 app.use(bodyParser.json());
 //declared to use cors
 app.use(cors());
